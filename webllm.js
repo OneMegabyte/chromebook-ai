@@ -1,1 +1,1 @@
-export * from "https://cloudflare.com";
+export * from "https://esm.run";
