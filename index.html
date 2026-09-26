@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGPU AI Chat</title>
+    <style>
+        body { font-family: system-ui, -apple-system, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f4f4f9; color: #333; }
+        #chatbox { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        #status { font-weight: 600; color: #007bff; margin-bottom: 15px; font-size: 0.95rem; }
+        #output { height: 300px; overflow-y: auto; border: 1px solid #e0e0e0; padding: 15px; margin-bottom: 15px; background: #fafafa; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; }
+        .input-area { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem; }
+        button { padding: 12px 20px; background: #007bff; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+    <!-- Loading the file with an unblocked cdnjs mirror -->
+    <script src="https://cloudflare.com"></script>
+</head>
+<body>
+
+<div id="chatbox">
+    <h2>School Chromebook AI App</h2>
+    <div id="status">Waiting for library connection...</div>
+    <div id="output"></div>
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Type a message..." disabled>
+        <button id="sendBtn" onclick="sendMessage()" disabled>Send</button>
+    </div>
+</div>
+
+<script>
+    const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
+    let engine;
+
+    // This function checks continuously until the script is fully ready
+    function checkAndInit() {
+        if (typeof webllm !== "undefined") {
+            document.getElementById("status").textContent = "Initializing AI Engine...";
+            initAI();
+        } else {
+            // Wait half a second and check again
+            setTimeout(checkAndInit, 500);
+        }
+    }
+
+    async function initAI() {
+        try {
+            if (!navigator.gpu) {
+                document.getElementById("status").style.color = "red";
+                document.getElementById("status").textContent = "Error: This browser or device does not support WebGPU.";
+                return;
+            }
+
+            engine = await webllm.CreateMLCEngine(MODEL_ID, {
+                initProgressCallback: (p) => {
+                    document.getElementById("status").style.color = "#007bff";
+                    document.getElementById("status").textContent = "Downloading AI Brain: " + Math.round(p.progress * 100) + "%";
+                },
+            });
+            document.getElementById("status").style.color = "green";
+            document.getElementById("status").textContent = "AI Ready! (You can go offline now)";
+            document.getElementById("userInput").disabled = false;
+            document.getElementById("sendBtn").disabled = false;
+        } catch (err) {
+            document.getElementById("status").style.color = "red";
+            document.getElementById("status").textContent = "Initialization failed. Device may lack enough RAM.";
+            console.error(err);
+        }
+    }
+
+    window.sendMessage = async function() {
+        const inputField = document.getElementById("userInput");
+        const outputDiv = document.getElementById("output");
+        const prompt = inputField.value.trim();
+        if (!prompt) return;
+
+        outputDiv.innerHTML += `<p><b>You:</b> ${prompt}</p>`;
+        inputField.value = "";
+        document.getElementById("status").style.color = "#555";
+        document.getElementById("status").textContent = "AI is thinking...";
+
+        try {
+            const reply = await engine.chat.completions.create({
+                messages: [{ role: "user", content: prompt }],
+            });
+
+            outputDiv.innerHTML += `<p><b>AI:</b> ${reply.choices.message.content}</p>`;
+        } catch (error) {
+            outputDiv.innerHTML += `<p style="color:red;"><b>Error:</b> Failed to generate response.</p>`;
+        }
+
+        document.getElementById("status").style.color = "green";
+        document.getElementById("status").textContent = "AI Ready!";
+        outputDiv.scrollTop = outputDiv.scrollHeight;
+    }
+
+    // Start checking for the library safely
+    checkAndInit();
+</script>
+
+</body>
+</html>
