@@ -29,8 +29,8 @@
 </div>
 
 <script type="module">
-    // This points directly to the file inside your own repository, bypassing external networks!
-    import { CreateMLCEngine } from "./webllm.js";
+    // This imports the bundle cleanly from Unpkg, which avoids all local folder/CORS traps!
+    import { CreateMLCEngine } from "https://unpkg.com";
 
     const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
     let engine;
