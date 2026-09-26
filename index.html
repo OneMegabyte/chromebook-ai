@@ -15,8 +15,6 @@
         button:hover { background: #0056b3; }
         button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
-    <!-- Using a completely stable global package bundle script -->
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
@@ -30,7 +28,10 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+    // This imports the code engine safely as a module, completely avoiding "not defined" errors
+    import { CreateMLCEngine } from "https://cloudflare.com";
+
     const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
     let engine;
 
@@ -42,8 +43,7 @@
                 return;
             }
 
-            // Calls the core package engine globally without import traps
-            engine = await webllm.CreateMLCEngine(MODEL_ID, {
+            engine = await CreateMLCEngine(MODEL_ID, {
                 initProgressCallback: (p) => {
                     document.getElementById("status").style.color = "#007bff";
                     document.getElementById("status").textContent = "Downloading AI Brain: " + Math.round(p.progress * 100) + "%";
@@ -86,8 +86,7 @@
         outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
-    // Give the browser one second to register the global bundle script perfectly
-    setTimeout(initAI, 1000);
+    initAI();
 </script>
 
 </body>
