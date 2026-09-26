@@ -15,6 +15,8 @@
         button:hover { background: #0056b3; }
         button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
+    <!-- Using a completely stable global package bundle script -->
+    <script src="https://jsdelivr.net"></script>
 </head>
 <body>
 
@@ -28,10 +30,7 @@
     </div>
 </div>
 
-<script type="module">
-    // Pulling directly from a stable, smart compilation delivery network that skips local security traps
-    import { CreateMLCEngine } from "https://esm.sh";
-
+<script>
     const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
     let engine;
 
@@ -43,7 +42,8 @@
                 return;
             }
 
-            engine = await CreateMLCEngine(MODEL_ID, {
+            // Calls the core package engine globally without import traps
+            engine = await webllm.CreateMLCEngine(MODEL_ID, {
                 initProgressCallback: (p) => {
                     document.getElementById("status").style.color = "#007bff";
                     document.getElementById("status").textContent = "Downloading AI Brain: " + Math.round(p.progress * 100) + "%";
@@ -55,7 +55,7 @@
             document.getElementById("sendBtn").disabled = false;
         } catch (err) {
             document.getElementById("status").style.color = "red";
-            document.getElementById("status").textContent = "Initialization failed. Check console errors.";
+            document.getElementById("status").textContent = "Initialization failed. Device may lack enough RAM.";
             console.error(err);
         }
     }
@@ -86,7 +86,8 @@
         outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
-    initAI();
+    // Give the browser one second to register the global bundle script perfectly
+    setTimeout(initAI, 1000);
 </script>
 
 </body>
