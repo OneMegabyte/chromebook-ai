@@ -15,14 +15,12 @@
         button:hover { background: #0056b3; }
         button:disabled { background: #ccc; cursor: not-allowed; }
     </style>
-    <!-- Loading the file with an unblocked cdnjs mirror -->
-    <script src="https://cloudflare.com"></script>
 </head>
 <body>
 
 <div id="chatbox">
     <h2>School Chromebook AI App</h2>
-    <div id="status">Waiting for library connection...</div>
+    <div id="status">Initializing AI Engine...</div>
     <div id="output"></div>
     <div class="input-area">
         <input type="text" id="userInput" placeholder="Type a message..." disabled>
@@ -30,20 +28,12 @@
     </div>
 </div>
 
-<script>
+<script type="module">
+    // Pulling directly from a stable, smart compilation delivery network that skips local security traps
+    import { CreateMLCEngine } from "https://esm.sh";
+
     const MODEL_ID = "Llama-3.2-1B-Instruct-q4f16_1-MLC";
     let engine;
-
-    // This function checks continuously until the script is fully ready
-    function checkAndInit() {
-        if (typeof webllm !== "undefined") {
-            document.getElementById("status").textContent = "Initializing AI Engine...";
-            initAI();
-        } else {
-            // Wait half a second and check again
-            setTimeout(checkAndInit, 500);
-        }
-    }
 
     async function initAI() {
         try {
@@ -53,7 +43,7 @@
                 return;
             }
 
-            engine = await webllm.CreateMLCEngine(MODEL_ID, {
+            engine = await CreateMLCEngine(MODEL_ID, {
                 initProgressCallback: (p) => {
                     document.getElementById("status").style.color = "#007bff";
                     document.getElementById("status").textContent = "Downloading AI Brain: " + Math.round(p.progress * 100) + "%";
@@ -65,7 +55,7 @@
             document.getElementById("sendBtn").disabled = false;
         } catch (err) {
             document.getElementById("status").style.color = "red";
-            document.getElementById("status").textContent = "Initialization failed. Device may lack enough RAM.";
+            document.getElementById("status").textContent = "Initialization failed. Check console errors.";
             console.error(err);
         }
     }
@@ -96,8 +86,7 @@
         outputDiv.scrollTop = outputDiv.scrollHeight;
     }
 
-    // Start checking for the library safely
-    checkAndInit();
+    initAI();
 </script>
 
 </body>
